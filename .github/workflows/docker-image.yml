@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: run pixiv login
-      run: docker run --rm -it eggplanter/gppt lh -u ${{ secrets.USERNAME }} -p ${{ secrets.PASSWORD }}
+      run: docker run --rm -it eggplanter/gppt -h
