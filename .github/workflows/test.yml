@@ -1,19 +1,19 @@
-name: pixiv auto login
+# name: pixiv auto login
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
 
-jobs:
+# jobs:
 
-  build:
+#   build:
 
-    runs-on: ubuntu-latest
+#     runs-on: ubuntu-latest
 
-    steps:
-    # - uses: actions/checkout@v2
-    - name: run pixiv login
-      # run: echo "test ${{ secrets.USERNAME }}"
-      run: docker run --rm -i eggplanter/gppt lh -u ${{ secrets.USERNAME }} -p ${{ secrets.PASSWORD }}
+#     steps:
+#     # - uses: actions/checkout@v2
+#     - name: run pixiv login
+#       # run: echo "test ${{ secrets.USERNAME }}"
+#       run: docker run --rm -i eggplanter/gppt lh -u ${{ secrets.USERNAME }} -p ${{ secrets.PASSWORD }}
