@@ -11,11 +11,12 @@ from mongoengine import *
 from mongoengine.document import *
 from mongoengine.fields import *
 class Tokens(Document):
-    refresh = StringField()
+    refresh = StringField(primary_key=True)
     auth = StringField()
 
 import os
-db_auth = os.environ["DBAUTH"]
+import json
+db_auth = json.loads(os.environ["DBAUTH"])
 
 import requests
 
@@ -133,6 +134,12 @@ def auto_refresh():
 
 def action_refresh():
     tokens = Tokens.objects().first()
+    if not tokens:
+        Tokens(
+            refresh='put_your_refresh_key_here',
+            auth='access_key_is_to_be_generated'
+        ).save()
+        return
     access_token, refresh_token = refresh(tokens.refresh)
     tokens.auth = access_token
     tokens.save()
@@ -149,7 +156,7 @@ def main():
     refresh_parser.set_defaults(func=lambda ns: refresh(ns.refresh_token))
     auto_parser = subparsers.add_parser("auto")
     auto_parser.set_defaults(func=lambda ns: auto_refresh())
-    
+
     action_parser = subparsers.add_parser("action")
     action_parser.set_defaults(func=lambda ns: action_refresh())
     args = parser.parse_args()
