@@ -2,5 +2,5 @@ requests[socks]
 mongoengine
 pixivpy
 pydantic
-
+pillow
 
