@@ -8,15 +8,11 @@ from urllib.parse import urlencode
 
 
 from mongoengine import *
-from mongoengine.document import *
-from mongoengine.fields import *
-class Tokens(Document):
-    refresh = StringField(primary_key=True)
-    auth = StringField()
+from datamodel import *
 
 import os
 import json
-db_auth = json.loads(os.environ["DBAUTH"])
+
 
 import requests
 
@@ -164,5 +160,5 @@ def main():
 
 
 if __name__ == "__main__":
-    connect(**db_auth)
+    
     main()

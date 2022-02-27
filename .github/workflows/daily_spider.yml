@@ -1,0 +1,39 @@
+name: daily_spider
+
+on:
+  workflow_dispatch: 
+  # push:
+  #   branches: [ master ]
+  # pull_request:
+  #   branches: [ master ]
+  schedule:
+    - cron:  0 10 * * * 
+      # 
+      # https://tool.lu/crontab/
+      # https://datetime360.com/cn/utc-cst-china-time/
+  #watch:
+  #    types: started   
+
+jobs:
+  exec_refresh:
+    runs-on: ubuntu-latest
+    #if: github.event.repository.owner.id == github.event.sender.id
+    # https://p3terx.com/archives/github-actions-manual-trigger.html
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Python
+      run: |
+        sudo apt update && \
+        sudo apt install python3
+      
+    - name: requirements
+      run: |
+        pip3 install -r requirements.txt
+       # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi 
+    - name: Main Work
+      run: |
+        python3 spider.py
+      env: 
+        DBAUTH: ${{ secrets.DBAUTH }}
