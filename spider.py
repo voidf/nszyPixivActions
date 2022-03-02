@@ -6,10 +6,10 @@ sys.dont_write_bytecode = True
 from datamodel import *
 
 _REQUESTS_KWARGS = {
-    # 'proxies': {
-    #     'https': 'http://127.0.0.1:7890',
-    #     'http': 'http://127.0.0.1:7890',
-    # },
+    'proxies': {
+        'https': 'http://127.0.0.1:7890',
+        'http': 'http://127.0.0.1:7890',
+    },
     # 'verify': False,       # PAPI use https, an easy way is disable requests SSL verify
 }
 
@@ -23,27 +23,28 @@ _REQUESTS_KWARGS = {
 api = AppPixivAPI(**_REQUESTS_KWARGS)
 api.auth(refresh_token=Tokens.objects().first().refresh)
 import traceback
-def get_illust_follow_new() -> list:
+def get_illust_follow_new(debug=False) -> list:
     tot = []
     j = api.illust_follow()
     tot.extend(j.illusts)
-    nxt = api.parse_qs(j.next_url)
-    import time
-    import random
-    try:
-        while nxt is not None:
-            j = api.illust_follow(**nxt)
-            print(str(j)[:100])
-            tot.extend(j.illusts)
-            nxt = api.parse_qs(j.next_url)
-            time.sleep(random.randint(3,7))
+    if not debug:
+        nxt = api.parse_qs(j.next_url)
+        import time
+        import random
+        try:
+            while nxt is not None:
+                j = api.illust_follow(**nxt)
+                print(str(j)[:100])
+                tot.extend(j.illusts)
+                nxt = api.parse_qs(j.next_url)
+                time.sleep(random.randint(3,7))
 
-            with open('tmp.json','w') as f:
-                json.dump(tot, f)
-    except:
-        traceback.print_exc()
-        with open('tmp.json','r') as f:
-            tot = json.load(f)
+                with open('tmp.json','w') as f:
+                    json.dump(tot, f)
+        except:
+            traceback.print_exc()
+            with open('tmp.json','r') as f:
+                tot = json.load(f)
     return tot
 
 def recover_from_disk():
@@ -52,6 +53,24 @@ def recover_from_disk():
     if isinstance(tot, dict):
         tot = tot['illusts']
     return tot
+
+def get_promoted():
+    # if not Promoted.objects():
+        # Promoted(pk=84019281).save()
+        # Promoted(pk=68419907).save()
+
+    res = []
+
+    for i in Promoted.objects():
+        if PictureBinary.objects(pk=i.pk) or Refused.objects(pk=i.pk) or Passed.objects(pk=i.pk):
+            print(f'found {i} already in database.')
+        else:
+            detail = api.illust_detail(i.pk)
+            res.append(detail.illust)
+        
+        i.delete()
+    return res
+
 
 def download_pictures(tot: list):
     from io import BytesIO
@@ -71,13 +90,14 @@ def download_pictures(tot: list):
         except:
             traceback.print_exc()
         finally:
-            print(f'processing ({ind+1}/{len(tot)})')
+            print(f'downloading ({ind+1}/{len(tot)}) pid={i["id"]}')
             content.truncate(0)
             content.seek(0)
 
+# get_promoted()
 
 # Pending.objects().delete()
-download_pictures(get_illust_follow_new())
+download_pictures(get_illust_follow_new() + get_promoted())
 print('Done work')
     # with open('tmp.json', 'r') as f:
     #     j = json.load(f)
