@@ -5,4 +5,4 @@ preferences.py
 __pycache__/
 *.pyc
 tmp*
-
+build/

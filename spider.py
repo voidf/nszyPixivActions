@@ -6,10 +6,10 @@ sys.dont_write_bytecode = True
 from datamodel import *
 
 _REQUESTS_KWARGS = {
-    'proxies': {
-        'https': 'http://127.0.0.1:7890',
-        'http': 'http://127.0.0.1:7890',
-    },
+    # 'proxies': {
+    #     'https': 'http://127.0.0.1:7890',
+    #     'http': 'http://127.0.0.1:7890',
+    # },
     # 'verify': False,       # PAPI use https, an easy way is disable requests SSL verify
 }
 

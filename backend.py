@@ -70,11 +70,12 @@ async def refuse_pending(pid:int):
 
 import os
 # import shlex
+
 @app.get('/build/{b:path}')
 async def file_proxy(b):
-    if '..' in b:
-        raise HTTPException(403, {'msg': '老师傅行行好别打了= ='})
-    file_path = f'{os.getcwd()}/{b.replace("..","")}'
+    # if '..' in b:
+        # raise HTTPException(403, {'msg': '老师傅行行好别打了= ='})
+    file_path = f'{os.getcwd()}/build/{b}'
     print(file_path)
     if not os.path.exists(file_path):
         raise HTTPException(404)
