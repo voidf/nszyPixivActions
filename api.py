@@ -43,19 +43,22 @@ async def get_pending(pid:int):
 
 @app.get('/random')
 async def get_pending_list(typ: str='ero'):
-    """
-    随机拿一条图的信息
+    """随机拿一条图的信息
 
     可以使用typ指定需要的种类：
 
     kawaii
         萝莉涩图
+
     ero
         默认涩图
+
     nice
         完成度高的或者艺术感占主要成分的图
+
     r18
         不带幻影坦克会炸群的图，可能不色但一定是黄图
+        
     kusa
         试试就逝世
     
