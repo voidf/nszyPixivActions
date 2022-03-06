@@ -72,6 +72,7 @@ async def get_pending_list(typ: str='ero'):
     for i in r:
         # print(i)
         i['id'] = i.pop('_id')
+        i['source'] = 'pixiv'
 
         return i
 
