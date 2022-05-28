@@ -2,8 +2,9 @@ from dataclasses import dataclass
 from typing import List
 from mongoengine.document import *
 from mongoengine.fields import *
+from mongoengine import connect
 from mongoengine import *
-
+import datetime
 
 try:
     import json
@@ -97,7 +98,15 @@ class SaveTimeBase(Base):
         d['create_time'] = self.create_time.strftime('%Y-%m-%d')
         return d
 
-
+class RandomizedMixin():
+    @classmethod
+    def sample(cls, size=1, **match):
+        agg = []
+        if match:
+            agg.append({'$match': match})
+        agg.append({'$sample': {'size':size}})
+        return cls.objects.aggregate(agg)
+        
 
 
 
@@ -148,7 +157,7 @@ class Pending(Document, Base):
     x_restrict = IntField()
     image_urls = DictField()
 
-class Passed(Document):
+class Passed(Document, RandomizedMixin):
     """我觉得可以放进api的图"""
     id = IntField(primary_key=True)
     typ = StringField() # 人工索引分类用，暂时想分R-18、好看、色色、帅哥
@@ -172,3 +181,7 @@ from mongoengine.queryset.base import *
 class PictureBinary(Document):
     id = ReferenceField(Pending, reverse_delete_rule=DO_NOTHING, primary_key=True)
     content = ImageField() # 必须手动删除，不能级联
+
+class OtherSourcePicture(Document, RandomizedMixin):
+    category = StringField()
+    content = ImageField()

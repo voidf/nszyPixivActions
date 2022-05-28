@@ -1,7 +1,9 @@
+from io import BytesIO
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import *
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from PIL import Image
 
 import os
 import sys
@@ -31,6 +33,15 @@ async def get_binary(pid:int):
     else:
         raise HTTPException(404)
 
+@app.get('/bin/other/{pid}')
+async def get_other_source_binary(pid:int):
+    """拿其他来源给定pid的一张图"""
+    r: OtherSourcePicture = OtherSourcePicture.objects(pk=pid).first()
+    if r:
+        return Response(r.content.read(), media_type='image/jpeg')
+    else:
+        raise HTTPException(404)
+
 @app.get('/pending/{pid}')
 async def get_pending(pid:int):
     """拿待审区的图
@@ -42,7 +53,7 @@ async def get_pending(pid:int):
         raise HTTPException(404)
 
 @app.get('/random')
-async def get_pending_list(typ: str='ero'):
+async def get_random_pixiv_info(typ: str='ero'):
     """随机拿一条图的信息
 
     可以使用typ指定需要的种类：
@@ -63,11 +74,7 @@ async def get_pending_list(typ: str='ero'):
         试试就逝世
     
     """
-    r = Passed.objects().aggregate([{
-        '$match': { 'typ': typ }
-   },{
-        '$sample':{'size':1}
-    }])
+    r = Passed.sample(typ=typ)
     print(r)
     for i in r:
         # print(i)
@@ -77,7 +84,7 @@ async def get_pending_list(typ: str='ero'):
         return i
 
 @app.get('/randbin')
-async def get_pending_list(typ: str='ero'):
+async def get_random_pixiv_bin(typ: str='ero'):
     """随机拿一张图的二进制
 
     可以使用typ指定需要的种类：
@@ -98,14 +105,37 @@ async def get_pending_list(typ: str='ero'):
         试试就逝世
     
     """
-    r = Passed.objects().aggregate([{
-        '$match': { 'typ': typ }
-   },{
-        '$sample':{'size':1}
-    }])
+    r = Passed.sample(typ=typ)
     print(r)
     for i in r:
         return Response(PictureBinary.objects(pk=i['_id']).first().content.read(), media_type='image/jpeg')
+
+@app.get('/randbin/other')
+async def get_random_othersource_bin(category: str):
+    """随机拿一张其他来源图的二进制"""
+    r = OtherSourcePicture.sample(category=category)
+    print(r)
+    for i in r:
+        return Response(OtherSourcePicture._from_son(i).content.read(), media_type='image/jpeg')
+
+@app.get('/autotank')
+async def automatic_construct_tank():
+    """自动组装幻影坦克
+    
+    感谢https://github.com/Aloxaf/MirageTankGo/blob/ce5fef1adbc01af7751a88f3ad2833123d58ac0c/MTCore/MTCore.py
+    """
+    dest = OtherSourcePicture.sample(category='YR').next()
+    dest = OtherSourcePicture._from_son(dest).content
+    dest = Image.open(dest)
+    source = Passed.sample(typ='nice').next()
+    source = PictureBinary.objects(pk=source['_id']).first().content
+    source = Image.open(source)
+    from MTCore import gray_car
+    buffer = BytesIO()
+    gray_car(source, dest).save(buffer, format='png')
+    buffer.seek(0)
+    return Response(buffer.read(), media_type='image/png')
+
 
 if __name__ == '__main__':
     sys.dont_write_bytecode = True
